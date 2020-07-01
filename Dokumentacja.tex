@@ -1,0 +1,233 @@
+\documentclass[a4paper]{article}
+\usepackage[a4paper, portrait, margin=2cm]{geometry}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\newcounter{para}
+\newcommand\mypara{\par \refstepcounter {para} \huge \textbf \thepara.\space}\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{color}
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+\usepackage{listings}
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{pgreen},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$$},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+
+\begin{document}
+%POCZATEK STRONY TYTULOWEJ
+
+\begin{center}
+\title*{\large Narzędzia i środowiska programistyczne}\\
+\end{center} 
+
+\noindent\rule{\textwidth}{1pt}
+
+\vspace{40px}
+
+\begin{center}
+\section*{\Huge Dokumentacja projektu Quiz}
+\end{center} 
+\vspace{180px}
+
+
+\begin{center}
+\author*{\Large   Wykonali: \\ Gabriela Jasnosz\\ Kamil Budzik\\ Kamil Pinas\par}
+\end{center} 
+
+\begin{flushleft}
+\vspace{260px}
+\author*{\Large  Prowadzący: Tomasz Gądek \newline Kierunek: Informatyka \newline Semestr: Zimowy \newline  Rok: 2\par}
+\end{flushleft}
+\newpage
+%KONIEC STRONY TYTUŁOWEJ
+
+%WSTEP
+\setlength\parindent{0pt}
+\mypara Wstęp
+\section*{\large\hspace*{8mm} Stworzona przez nas aplikacja jest Quizem działającym w oparciu o architekturę klient-serwer. Server odczytuje w całości plik csv z pytaniami, po czym kolejno przesyła je do klienta na jego żądanie.
+\newline \newline Klient: Zajmuje się jedynie nawigacją i wyświetlaniem pytań wraz z odpowiedziami wielokrotnego wyboru. Klient wyświetla również ilość możliwych punktów do zdobycia za każde pytanie.
+\newline \newline Serwer: Jest odpowiedzialny za zwracanie odpowiednich pytań w formacie JSON na żądanie klienta. Przelicza na bieżąco punkty. Po zakończeniu testu serwer generuje raport z wynikami w formacie PDF. W raporcie znajduje się informacja jakie odpowiedzi zaznaczył użytkownik i jakie odpowiedzi były prawidłowe.W podsumowaniu znajduje się również informacja o wyniku testy - czy został zdany i ile punktów uzyskał zdający.}\par
+%/WSTEP
+
+%INSTRUKCJA OBSLUGI
+\mypara Instrukcja obsługi i opis działania aplikacji klienta
+\section*{\large\hspace*{8mm} 1.Kliknij przycisk “Start Game” aby rozpocząć quiz.
+Po kliknięciu przycisku uruchamia się usługa odpowiedzialna za odczytywanie pytań z serwera kolejno, zgodnie z id pytania.}\par
+
+%startgamephoteo
+
+\begin{center}
+\includegraphics[width=12cm]{start.png}
+\end{center}
+\newpage %KONIEC STRONY
+
+\section*{\large\hspace*{8mm} 2.Zaznacz odpowiedzi, które uważasz za poprawne.}\par
+\begin{center}
+\includegraphics[width=12cm]{wybierzodp.png}
+\end{center}
+\section*{\large\hspace*{8mm} Po wybraniu odpowiedzi odblokowuje się przycisk Next question, którym możesz przejść do następnego pytania. Kliknięcie przycisku automatycznie spowoduje uruchomienie usługi serwera odpowiedzialnej za zliczanie punktów na bieżąco.
+UWAGA! Tylko wybranie wszystkich poprawnych odpowiedzi spowoduje przyznanie punktów za pytanie.}\par
+\section*{\large\hspace*{8mm} 3.Gdy odpowiesz na wszystkie pytania kliknij przycisk Send result and quit, który spowoduje wyslanie do serwera wszystkich informacji o przeprowadzonym quizie oraz uruchomienie uslugi odpowiedzialnej za utworzeniu raportu z przeprowadzonego quizu w formacie pdf.}\par
+\begin{center}
+\includegraphics[width=12cm]{koniec.png}
+\end{center}
+
+\section*{\large\hspace*{8mm} 4.Potwierdź swoją decyzję, aby zamknąc aplikację.}\par
+\begin{center}
+\includegraphics[width=12cm]{potweirdz.png}
+\end{center}
+%/INSTRUKCJA OBSLUGI
+
+%OPIS USLUG
+\mypara Opis usług serwera
+%%GET POCZTEK
+\section*{\large\hspace*{8mm} a) Usługa get}\par
+\small
+\begin{lstlisting}
+   public ResponseEntity<ReturnQuestion>test(@PathVariable("id") Integer id) {
+        try {
+            boolean ifLast;
+            if (id == quiz.size()-1) {
+                ifLast = true;
+            } else {
+                ifLast = false;
+            }
+            final ReturnQuestion quizValues = new ReturnQuestion(
+                    quiz.get(id).getQuestion(),
+                    quiz.get(id).getAnswerA(),
+                    quiz.get(id).getAnswerB(),
+                    quiz.get(id).getAnswerC(),
+                    quiz.get(id).getAnswerD(),
+                    quiz.get(id).getPoints(),
+                    ifLast);
+            return new ResponseEntity<ReturnQuestion>(quizValues, HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+\end{lstlisting}
+\section*{\large\hspace*{8mm}Parametry wejściowe: id(numer pytania)\newline
+\hspace*{8mm}Parametry wyjsciowe (JSON):}\par
+\small
+\begin{lstlisting}
+    {
+        "question": "2+2=?",
+        "answers": ["0","1","2","4"],
+        "points": 1,
+        "lastQuestion": false
+    }
+\end{lstlisting}
+
+\section*{\large\hspace*{8mm} Usługa get przyjmuje parametr którym jest numer pytania. Następnie tworzy obiekt klasy ReturnQuestion, który przechowuje wszystkie wymagane informacje odpowiadające pytaniu na liscie o podanym id, które mają być przesłane do klienta, czyli: pytanie, tablicę z czterema odpowiedziami, liczbę punktów za pytanie oraz informacje o tym czy pytanie jest ostatnie. 
+Jeżeli wszystko zadziała poprawnie tj. jeżeli istnieje pytanie o danym id oraz plik csv został odczytany prawidłowo, kod odpowiedzi serwera wyniesie 200(OK), a obiekt quizValues zostanie przesłany w formacie JSON.W przeciwnym razie odpowiedzią serwera będzie kod 404(NOTFOUND)\newline
+}\par
+%% GET KONIEC
+
+%PUT POCZATEK
+\section*{\large\hspace*{8mm} b) Usługa PUT URL(/quiz/calculate)
+}\par
+\small
+\begin{lstlisting}
+    @PutMapping(value = "/quiz/calculate")
+    public ResponseEntity<AnswerDto> test2(@RequestBody AnswerDto answerDto) {
+    
+        int plus=QuizCode.checkAnswer(answerDto.getSelectedAnswers(),
+        quiz.get(answerDto.getQuestionId()) .getCorrectAnswers(),
+        Integer.parseInt(quiz.get(answerDto.getQuestionId()).getPoints()));
+        
+        yourPoints = yourPoints + plus;
+        LOGGER.info(answerDto.toString());
+        return new ResponseEntity<AnswerDto>(answerDto, HttpStatus.OK);
+    }
+\end{lstlisting}
+\section*{\large\hspace*{8mm}Parametry wejściowe: id(numer pytania)\newline
+\hspace*{8mm}Parametry wejściowe (JSON):}\par
+\small
+\begin{lstlisting}
+    {
+        "questionId": 1,
+        "selectedAnswers": [1, 2],
+        "lastQuestion": false
+    }
+\end{lstlisting}
+
+\section*{\large\hspace*{8mm} Usługa put przyjmuje obiekt klasy AnswerDto zserializowany do JSON-a, który zawiera informacje od klienta, czyli id pytania,wybrane odpowiedzi zapisane w tablicy oraz informacje czy pytanie jest ostatnie.
+Następnie przelicza na bieżąco punkty na podstawie odpowiedzi na pytanie udzielonych przez użytkownika. Usługa jest wywoływana zaraz po udzieleniu odpowiedzi na pytanie.
+Jeżeli obiekt zostanie odebrany przez serwer poprawnie i przeliczy punkty, kod odpowiedzi serwera wyniesie 200(OK).
+}\par
+%PUT KONIEC
+\newpage %KONIEC STRONY
+
+%POST POCZTEK
+\section*{\large\hspace*{8mm} c) Usługa POST URL(/quiz/report)
+}\par
+\small
+\begin{lstlisting}
+@PostMapping(value = "/quiz/report")
+    public ResponseEntity<ArrayList<AnswerDto>> test3(@RequestBody ArrayList<AnswerDto> answerDto) {
+        LOGGER.info("Tworzenie raportu:");
+        FileData fileData = fileService.createFile(answerDto, PATH);
+        if(QuizCode.ifPassed(QuizApiController.getYourPoints())){
+            LOGGER.info("Wynik quizu jest pozytywny.");
+            return new ResponseEntity<>(answerDto, HttpStatus.OK);
+        }
+        else{
+            LOGGER.info("Wynik quizu jest negatywny.");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+\end{lstlisting}
+
+\section*{\large\hspace*{8mm} Usługa post przyjmuje listę obiektów AnswerDto zserializowaną do JSON-a, która zawiera wszystkie potrzebne informacje, następnie generuje raport w formacie PDF na podstawie danych zebranych podczas trwania testu  w którym wypisuje listę odebranych obiektów z informacją czy poprawnie odpowiedziano na dane pytanie, oraz z liczbą uzyskanych punktów i informacją czy test został zdany lub nie.\newline
+Kody odpowiedzi serwera:\newline
+200 - gdy test został zaliczony.\newline
+400 - gdy nie uzyskano zaliczenia.
+}\par
+%POST KONIEC
+%OPIS USLUG
+
+%WYKORZYSTANE TECHNOLOGIE
+\mypara Wykorzystane technologie 
+\section*{\large Aplikacja jest napisana zgodnie z architekturą REST\newline\newline a)Java - język programowania w którym zostały napisane zarówno serwer jak i aplikacja klienta.\newline\newline b)Intellij IDEA - środowisko programistyczne w którym powstał nasz projekt.\newline\newline c)Spring Framework - platforma która uprościła tworzenie oprogramowania dzięki umożliwieniu wstrzykiwania zależności.\newline\newline d)Maven - narzędzie automatyzujące budowę oprogramowania.W naszym projekcie znajduje się plik pom.xml który łączy nasz projekt w Javie z Maven. W pliku zapisana jest całkowita konfiguracja związana z projektem. Zostały w nim również dodane biblioteki lombok i iText.\newline\newline e)JSON - format wymiany danych, który był nam pomocny zarówno przy przesyłaniu danych do klienta, jak i odbieraniu ich od niego.\newline\newline f)Bitbucket i Git - hostingowy serwis internetowy dzięki któremu zarządzaliśmy projektem poprzez zdalne repozytorium, pozwolił nam na współpracę w zakresie tworzenia kodu, wykorzystujący system kontroli wersji Git.\newline\newline g)Biblioteka LOMBOK - biblioteka która ułatwia pisanie kodu. Dzięki niej przy pomocy adnotacji tworzyliśmy gotowe gettery, settery itp.
+}\par
+%/WYKORZYSTANE TECHNOLOGIE
+
+\newpage
+%PODZIAŁ PRAC
+\mypara Podział prac w zespole \newline
+
+%do tabeli
+
+\setlength{\arrayrulewidth}{0.6mm}
+\setlength{\tabcolsep}{12pt}
+\renewcommand{\arraystretch}{1.5}
+\Large
+\begin{tabular}{ |p{4cm}|p{12cm}| }
+\hline
+Gabriela Jasnosz& Sporządzenie obsługi strumieni dla pliku csv.\newline Przygotowanie usługi GET po stronie serwera.\newline Przygotowanie metod i klas zwiazanych z tworzeniem raportu oraz sprawdzaniem czy quiz został zaliczony - liczenie punktów i spradzanie odpowiedzi. \newline Przygotowanie dokumentacji w programie Word.\\
+\hline
+
+Kamil Budzik& Przygotowanie prymitywnej wersji programu na której potem bazowano.\newline Przygotowanie GUI wraz z jego metodami.\newline Konwersja dokumentacji na LATEX.\newline Przygotowanie klasy AnswerData do wysyłania odpowiedzi serwerowi.
+\\
+\hline
+
+Kamil Pinas& Usługi (GET,PUT,POST) po stronie klienta i komunikacja z serwerem.\newline Przygotowanie odpowiednich klas by mogło to zostać zrealizowane.\newline Pomoc w pisaniu dokumentacji. \\
+\hline
+%koniec tabeli
+\end{tabular}
+%/PODZIAŁ PRAC
+
+\end{document}
